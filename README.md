@@ -1,7 +1,10 @@
 # Career Advisor Skill
 
-> An open-source skill for AI agents that helps users create resumes, render PDFs, fill in
-> experience details, and prep for technical interviews.
+<p align="right">
+  <a href="README.md">中文</a> | <a href="README.en.md">English</a>
+</p>
+
+> 一个面向 AI Agent 的开源职业顾问 skill，帮助用户创建简历、渲染 PDF、补全经历细节，并准备技术面试。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Version: 1.0.0](https://img.shields.io/badge/version-1.0.0-blue.svg)](CHANGELOG.md)
@@ -9,61 +12,56 @@
 
 ---
 
-## What It Does
+## 它能做什么
 
-This skill turns your AI agent into a **career advisor** with 4 core workflows:
+这个 skill 会把你的 AI Agent 变成一个 **Career Advisor（职业顾问）**，内置 4 个核心工作流：
 
-| Workflow | Purpose | Output |
+| 工作流 | 用途 | 输出 |
 |---|---|---|
-| **W1 — New Resume** | Collect 5 baseline fields + apply template → write resume | `.md` resume draft |
-| **W2 — Render PDF** | Apply template + language branch → render 1-page A4 PDF | `CV-<name>.pdf` |
-| **W3 — Q&A Fill-in** | Chase `[待补]` / `[TBD]` fields one by one → write back live | Updated `.md` resume |
-| **W4 — Interview Questions** | Generate 10-15 technical interview Q&A from JD + industry + resume | Q&A `.md` file |
+| **W1 — 新建简历** | 收集 5 类基础信息 + 套用模板 -> 写出简历 | `.md` 简历初稿 |
+| **W2 — 渲染 PDF** | 套用模板 + 按语言分支处理 -> 渲染 1 页 A4 PDF | `CV-<name>.pdf` |
+| **W3 — 问答式补全** | 逐项追问 `[待补]` / `[TBD]` 字段 -> 实时写回 | 更新后的 `.md` 简历 |
+| **W4 — 面试题生成** | 基于 JD + 行业 + 简历生成 10-15 道技术面试问答 | 面试 Q&A `.md` 文件 |
 
-### Key Features
+### 核心特性
 
-- **Two language branches** out of the box:
-  - **English**: 1-page A4 US-style, no photo
-  - **Chinese**: 1-page A4, embeds a portrait photo (mandatory, white/blue/gray background only)
-- **Hard guardrails against fabrication**: never invents numbers, companies, or outcomes for
-  the user — unknown fields are marked `[待补]` / `[TBD]`
-- **JD keyword alignment**: target-JD high-frequency words must hit ≥70% in
-  Summary / Experience / Skills
-- **Trimming principles**: weakly related experiences get cut, course assignments aren't padded
-  as projects, undergraduate theses are marked as theses (not "Publications")
-- **Number/code disambiguation**: standalone 4+ digit numbers in industrial / manufacturing
-  context are treated as **product codes**, not quantities
-- **Template-based**: ships with starter templates for both languages; bring your own render
-  tool (reportlab / weasyprint / pandoc / etc.)
+- **内置中英文两个语言分支**：
+  - **英文**：1 页 A4 美式简历，不放照片
+  - **中文**：1 页 A4 简历，嵌入证件照（必需；仅接受白色/蓝色/灰色背景）
+- **防止编造的硬约束**：不会替用户虚构数字、公司或成果；未知字段统一标记为 `[待补]` / `[TBD]`
+- **JD 关键词对齐**：目标 JD 的高频关键词需要在 Summary / Experience / Skills 中达到至少 70% 覆盖
+- **简历精简原则**：弱相关经历会被删减；课程作业不包装成项目；本科论文标记为论文而不是 “Publications”
+- **数字/代码消歧**：在工业、制造业语境下，独立出现的 4 位及以上数字优先视为 **产品代码**，而不是数量
+- **模板驱动**：随包提供中英文 starter templates；PDF 渲染工具可自行选择（reportlab / weasyprint / pandoc 等）
 
 ---
 
-## Installation
+## 安装
 
-### From the `.skill` file
+### 从 `.skill` 文件安装
 
 ```bash
-# Unzip into your agent's skills directory
+# 解压到你的 Agent skills 目录
 unzip career-advisor-skill.skill -d ~/.your-agent/skills/
 
-# Or extract just the folder structure
+# 或者只抽取为 career-advisor 文件夹结构
 unzip -j career-advisor-skill.skill -d ~/.your-agent/skills/career-advisor/
 ```
 
-The skill layout is:
+skill 目录结构如下：
 
-```
+```text
 career-advisor/
 ├── SKILL.md
 ├── assets/
 │   └── templates/
 │       ├── resume-template-en.md
 │       └── resume-template-zh.md
-├── references/    # (empty by default — add your own deep-dive docs)
-└── scripts/       # (empty by default — add your own render scripts)
+├── references/    # 默认空目录，可放自己的深度参考文档
+└── scripts/       # 默认空目录，可放自己的渲染脚本
 ```
 
-### From source
+### 从源码安装
 
 ```bash
 git clone https://github.com/ietigerjue/career-advisor-skill.git
@@ -72,81 +70,76 @@ cp -r career-advisor-skill/ ~/.your-agent/skills/career-advisor/
 
 ---
 
-## Usage
+## 使用方式
 
-Once installed, the skill activates when the user uses any of these trigger phrases:
+安装后，当用户使用下面这些触发词时，skill 会被激活：
 
-**English**: "career advisor", "job search", "resume", "new resume", "generate PDF",
-"technical interview", "mock interview", "interview questions"
+**英文**：`career advisor`、`job search`、`resume`、`new resume`、`generate PDF`、`technical interview`、`mock interview`、`interview questions`
 
-**Chinese**: 「职业顾问」「求职」「简历」「新建简历」「出 PDF」「生成简历」「技术面」「面试题」
+**中文**：「职业顾问」「求职」「简历」「新建简历」「出 PDF」「生成简历」「技术面」「面试题」
 
-### Quick start
+### 快速开始
 
-```
+```text
 You: "Help me build a new resume for a market research intern role in English"
 
 Skill (W1): "Great. I need 5 baseline fields. Let's start with contact info:
              name, email, phone, city, and LinkedIn (optional)."
 
-You: [provide details]
+You: [提供信息]
 
 Skill (W1): "Got it. Next: education — school, major, degree, dates, GPA if >3.5."
 ...
 ```
 
-### Trigger phrase → workflow mapping
+### 触发词 -> 工作流映射
 
-| User says | Workflow |
+| 用户说 | 工作流 |
 |---|---|
-| "new resume" / "build my resume" / "use this template" | **W1** |
-| "export PDF" / "render resume" / "generate PDF" | **W2** |
-| "fill in" / "add more" / "expand" / "too thin" | **W3** |
-| "interview questions" / "10-15 questions" / "mock interview" | **W4** |
+| `new resume` / `build my resume` / `use this template` | **W1** |
+| `export PDF` / `render resume` / `generate PDF` | **W2** |
+| `fill in` / `add more` / `expand` / `too thin` | **W3** |
+| `interview questions` / `10-15 questions` / `mock interview` | **W4** |
 
 ---
 
-## Data Layout
+## 数据目录
 
-The skill expects (or creates) the following directories relative to wherever the agent writes:
+skill 会期望或创建以下目录，路径相对于 Agent 写入文件的位置：
 
-```
+```text
 career-advisor-data/
-├── resume-library/         # W1 output (resume drafts: v1, v2, v3…)
-├── JD-library/             # W4 input (target JDs you've saved)
-├── interview-questions/    # W4 output (10-15 Q&A files)
-├── templates/              # Custom templates (in addition to assets/templates/)
-└── photo/                  # One portrait photo file (Chinese resumes only)
+├── resume-library/         # W1 输出：简历草稿 v1、v2、v3...
+├── JD-library/             # W4 输入：已保存的目标 JD
+├── interview-questions/    # W4 输出：10-15 道面试 Q&A 文件
+├── templates/              # 自定义模板，可与 assets/templates/ 并存
+└── photo/                  # 一张证件照文件，仅中文简历需要
 ```
 
-You can use any path — just point the agent at your preferred location.
+你可以使用任意路径，只要告诉 Agent 你的偏好目录即可。
 
 ---
 
-## What's NOT in this skill
+## 这个 skill 不包含什么
 
-This skill is intentionally focused. It does **not** include:
+这个 skill 故意保持聚焦，因此 **不包含**：
 
-- **PDF render scripts** — pair it with your preferred `markdown → PDF` tool
-  (reportlab, weasyprint, pandoc, LaTeX, etc.). The provided templates work with any of them.
-- **Photo background removal** — that workflow is explicitly out of scope. If the user's
-  photo has a dark/warm/busy background, the skill returns the problem to the user with two
-  options (replace background / retake photo).
-- **HR data / company intel / salary benchmarks** — the skill generates interview questions
-  based on the resume + JD, not on proprietary data.
-- **Multi-language beyond Chinese + English** — add your own template if needed.
+- **PDF 渲染脚本**：请搭配你偏好的 `markdown -> PDF` 工具使用，例如 reportlab、weasyprint、pandoc、LaTeX 等。随包模板可配合任意渲染方案。
+- **照片背景自动移除**：该流程明确不在 scope 内。如果用户照片背景过暗、偏暖或杂乱，skill 会把问题交还给用户，并提供两个选项：更换背景或重新拍摄。
+- **HR 数据 / 公司情报 / 薪资基准**：skill 会基于简历 + JD 生成面试题，不使用私有数据。
+- **中英文之外的多语言**：如需其他语言，可自行添加模板。
 
 ---
 
-## Customization
+## 自定义
 
-### Adding a new template
+### 添加新模板
 
-1. Create `resume-template-<lang>-vN.md` under `assets/templates/` (or your custom `templates/` dir)
-2. Add frontmatter with `template_id`, `language`, `embeds_photo`, `sections`
-3. The skill will discover and offer it to the user on W1
+1. 在 `assets/templates/`（或你的自定义 `templates/` 目录）下创建 `resume-template-<lang>-vN.md`
+2. 添加包含 `template_id`、`language`、`embeds_photo`、`sections` 的 frontmatter
+3. W1 工作流会发现该模板并提供给用户选择
 
-Example frontmatter:
+示例 frontmatter：
 
 ```yaml
 ---
@@ -159,32 +152,31 @@ sections: [etat_civil, formation, experience, competences]
 ---
 ```
 
-### Adding helper scripts
+### 添加辅助脚本
 
-Put executable scripts in `scripts/` and reference them by relative path in the SKILL.md or
-templates. The skill doesn't auto-execute scripts — agents invoke them based on workflow needs.
-
----
-
-## Contributing
-
-Issues and PRs welcome. Please:
-
-1. Open an issue first if it's a behavior change
-2. Keep SKILL.md under 30 KB for fast loading
-3. Don't include personal data, real names, or real company info in examples
-4. Run the desensitization checklist (no PII / no internal paths / no proprietary data)
+把可执行脚本放进 `scripts/`，并在 `SKILL.md` 或模板中用相对路径引用。skill 不会自动执行脚本，Agent 会根据工作流需要调用。
 
 ---
 
-## License
+## 贡献
 
-MIT — see [LICENSE](LICENSE).
+欢迎提交 issues 和 PR。请注意：
+
+1. 如果是行为变化，请先开 issue
+2. 保持 `SKILL.md` 小于 30 KB，方便快速加载
+3. 示例中不要包含个人数据、真实姓名或真实公司信息
+4. 跑一遍脱敏检查清单（无 PII / 无内部路径 / 无专有数据）
 
 ---
 
-## Acknowledgments
+## 许可证
 
-- Format spec: [agentskills.io](https://agentskills.io/home)
-- Inspired by the broader agent-skills ecosystem
-- Built and battle-tested in real job-search workflows
+MIT — 见 [LICENSE](LICENSE)。
+
+---
+
+## 致谢
+
+- 格式规范：[agentskills.io](https://agentskills.io/home)
+- 灵感来自更广泛的 agent-skills 生态
+- 基于真实求职工作流构建并验证
