@@ -7,7 +7,7 @@
 > 一个面向 AI Agent 的开源职业顾问 skill，帮助用户创建简历、渲染 PDF、补全经历细节，并准备技术面试。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Version: 1.0.0](https://img.shields.io/badge/version-1.0.0-blue.svg)](CHANGELOG.md)
+[![Version: 1.1.0](https://img.shields.io/badge/version-1.1.0-blue.svg)](CHANGELOG.md)
 [![Agent Skills](https://img.shields.io/badge/agent--skills-compatible-green.svg)](https://agentskills.io/home)
 
 ---
@@ -32,7 +32,7 @@
 - **JD 关键词对齐**：目标 JD 的高频关键词需要在 Summary / Experience / Skills 中达到至少 70% 覆盖
 - **简历精简原则**：弱相关经历会被删减；课程作业不包装成项目；本科论文标记为论文而不是 “Publications”
 - **数字/代码消歧**：在工业、制造业语境下，独立出现的 4 位及以上数字优先视为 **产品代码**，而不是数量
-- **模板驱动**：随包提供中英文 starter templates；PDF 渲染工具可自行选择（reportlab / weasyprint / pandoc 等）
+- **模板驱动 + 脚本辅助**：随包提供中英文 starter templates、Markdown 转 PDF 脚本，以及本地照片背景移除脚本
 
 ---
 
@@ -57,8 +57,12 @@ career-advisor/
 │   └── templates/
 │       ├── resume-template-en.md
 │       └── resume-template-zh.md
+├── requirements-optional.txt
 ├── references/    # 默认空目录，可放自己的深度参考文档
-└── scripts/       # 默认空目录，可放自己的渲染脚本
+└── scripts/
+    ├── render_resume_pdf.py
+    ├── remove_photo_background.py
+    └── verify_scripts.py
 ```
 
 ### 从源码安装
@@ -67,6 +71,56 @@ career-advisor/
 git clone https://github.com/ietigerjue/career-advisor-skill.git
 cp -r career-advisor-skill/ ~/.your-agent/skills/career-advisor/
 ```
+
+---
+
+## 辅助脚本
+
+skill 在 `scripts/` 下内置了可选的本地辅助脚本。它们不会调用远程服务，也不会上传照片或简历内容。
+
+按需安装可选依赖：
+
+```bash
+pip install -r requirements-optional.txt
+```
+
+照片背景移除依赖 `rembg`，建议使用 Python 3.11-3.13；如果默认 Python 更新，给照片脚本单独建一个 3.11-3.13 虚拟环境即可。PDF 渲染即使不安装可选依赖，也能使用内置 `simple` 后端生成英文基础草稿。
+
+### Markdown 渲染为 PDF
+
+```bash
+python scripts/render_resume_pdf.py resume-library/resume_v2_market_research.md resume-library/CV-Name.pdf --language en
+
+python scripts/render_resume_pdf.py resume-library/resume_v2_cn.md resume-library/CV-Name.pdf --language zh --photo photo/portrait-clean.png
+```
+
+`render_resume_pdf.py` 支持：
+
+- `--backend auto`（默认）：依次尝试 WeasyPrint、ReportLab、Pandoc，然后回退到无依赖 simple 后端
+- `--backend weasyprint`：HTML/CSS 还原度最好
+- `--backend reportlab`：离线 Python fallback；中文建议加 `--font path/to/CJK.ttf`
+- `--backend pandoc`：调用本地 Pandoc 和指定 PDF engine
+- `--backend simple`：无依赖，仅适合英文基础草稿，不支持嵌入照片
+
+中文简历需要 `--photo`，除非使用 `--allow-missing-photo` 仅生成草稿。
+
+### 移除照片背景
+
+```bash
+python scripts/remove_photo_background.py photo/portrait.jpg photo/portrait-clean.png --background white
+```
+
+支持背景：`white`、`light-blue`、`light-gray`、`transparent`，或 `#ffffff` 这样的自定义十六进制颜色。脚本会写出新文件；除非显式传入 `--force`，否则拒绝覆盖源图片。
+
+`rembg` 首次运行可能会把分割模型下载到本地用户缓存；图片本身只在本地处理，本脚本不会上传图片。
+
+### 验证脚本
+
+```bash
+python scripts/verify_scripts.py
+```
+
+该命令会运行语法检查、CLI `--help` smoke test，以及无参数安全行为检查；不需要安装可选依赖。
 
 ---
 
@@ -124,8 +178,8 @@ career-advisor-data/
 
 这个 skill 故意保持聚焦，因此 **不包含**：
 
-- **PDF 渲染脚本**：请搭配你偏好的 `markdown -> PDF` 工具使用，例如 reportlab、weasyprint、pandoc、LaTeX 等。随包模板可配合任意渲染方案。
-- **照片背景自动移除**：该流程明确不在 scope 内。如果用户照片背景过暗、偏暖或杂乱，skill 会把问题交还给用户，并提供两个选项：更换背景或重新拍摄。
+- **内置二进制渲染引擎**：高保真输出依赖本地可选工具，例如 WeasyPrint、ReportLab、Pandoc、Pillow、rembg。按需安装即可。
+- **远程照片处理服务**：背景移除仅在本地运行，不使用上传服务。
 - **HR 数据 / 公司情报 / 薪资基准**：skill 会基于简历 + JD 生成面试题，不使用私有数据。
 - **中英文之外的多语言**：如需其他语言，可自行添加模板。
 
@@ -154,7 +208,7 @@ sections: [etat_civil, formation, experience, competences]
 
 ### 添加辅助脚本
 
-把可执行脚本放进 `scripts/`，并在 `SKILL.md` 或模板中用相对路径引用。skill 不会自动执行脚本，Agent 会根据工作流需要调用。
+把更多可执行脚本放进 `scripts/`，并在 `SKILL.md` 或模板中用相对路径引用。skill 不会自动执行脚本，Agent 会根据工作流需要调用。
 
 ---
 

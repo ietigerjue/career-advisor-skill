@@ -4,6 +4,25 @@ All notable changes to this skill are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] — 2026-06-07
+
+### Added
+- **Markdown-to-PDF helper**: `scripts/render_resume_pdf.py` with WeasyPrint, ReportLab,
+  Pandoc, and dependency-free simple backend options
+- **Photo background cleanup helper**: `scripts/remove_photo_background.py` for local-only
+  portrait background removal and white / light-blue / light-gray replacement
+- **Script verification harness**: `scripts/verify_scripts.py`
+- **Optional dependency list**: `requirements-optional.txt`
+- **Bilingual README docs** for installing and running the helper scripts
+
+### Changed
+- **W2 PDF rendering protocol** now points to the bundled helper script instead of requiring
+  users to bring their own render script
+- **Photo background protocol** now allows local auto-removal with user approval while still
+  preserving the original photo
+
+---
+
 ## [1.0.0] — 2024-12-XX
 
 ### Added
@@ -56,5 +75,6 @@ For transparency, here's the upstream evolution that led to v1.0.0:
 - **Public release prep**: desensitized, packaged as `.skill` file, documented with README +
   CHANGELOG, GitHub-published
 
-[Unreleased]: https://github.com/ietigerjue/career-advisor-skill/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/ietigerjue/career-advisor-skill/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/ietigerjue/career-advisor-skill/releases/tag/v1.1.0
 [1.0.0]: https://github.com/ietigerjue/career-advisor-skill/releases/tag/v1.0.0

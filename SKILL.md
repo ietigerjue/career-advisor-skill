@@ -25,7 +25,7 @@ description: |
     W3 = Q&A fill-in (chase missing fields → write back to resume)
     W4 = Interview questions (JD + industry + resume → 10-15 Q&A)
 
-version: 1.0.0
+version: 1.1.0
 author: Community skill (open-source)
 license: MIT
 platforms: [linux, macos, windows]
@@ -181,13 +181,21 @@ and return the ball to the user:
 #### Step 2: Render PDF
 
 - **Naming convention**: `CV-<name>.pdf` (not `resume_v2_xxx.pdf` — the PDF is the final deliverable for HR)
-- Apply the corresponding template's render script → output PDF
-- **Chinese branch** → render script auto-embeds photo (`photo/portrait.jpg` → top-right of PDF)
-- **English branch** → render script skips the photo step
+- Apply the corresponding template and run `scripts/render_resume_pdf.py` → output PDF
+- **Chinese branch** → pass `--language zh --photo photo/portrait-clean.png` (or the user's approved portrait path)
+- **English branch** → pass `--language en`; do not pass a photo
 
-This skill **does not bundle** a render script — pair it with your preferred
-`markdown-to-pdf` tool. The provided templates are designed to be rendered with
-reportlab, weasyprint, or pandoc.
+Bundled helper:
+
+```bash
+python scripts/render_resume_pdf.py resume-library/resume_v2_<role>.md resume-library/CV-<name>.pdf --language en
+python scripts/render_resume_pdf.py resume-library/resume_v2_<role>.md resume-library/CV-<name>.pdf --language zh --photo photo/portrait-clean.png
+```
+
+`render_resume_pdf.py` runs locally and supports WeasyPrint, ReportLab, Pandoc, or a
+dependency-free basic English fallback via `--backend auto|weasyprint|reportlab|pandoc|simple`.
+Install optional dependencies with `pip install -r requirements-optional.txt`. For Chinese
+ReportLab rendering, pass a local CJK font with `--font path/to/CJK.ttf`.
 
 #### Step 3: Mandatory self-check
 
@@ -358,22 +366,34 @@ is **most likely a product code**, not a quantity. Verify with the source before
 
 ---
 
-## 6. Photo Background Rule (v1.0.0 Protocol)
+## 6. Photo Background Rule (v1.1.0 Protocol)
 
 For Chinese resumes that embed photos:
 
 - **Acceptable backgrounds**: white / light blue / light gray
-- **Unacceptable backgrounds**: dark brown / warm tones / busy patterns → **do not render the PDF**
+- **Unacceptable backgrounds**: dark brown / warm tones / busy patterns → clean locally before rendering
 - **Low contrast** (dark clothing + dark background) → also reject
 
 When the user provides a photo with an unacceptable background, the AI must:
 
 1. Run vision analysis to confirm the background color
-2. Report the issue to the user with two clear options:
-   - **A. User replaces background** to white/blue/gray (fastest)
-   - **B. User retakes the photo** (best quality)
-3. **Never attempt to background-remove or recolor the photo automatically** — that protocol
-   was deprecated. Hand it back to the user.
+2. Report the issue and offer three clear options:
+   - **A. Auto-remove background locally** with `scripts/remove_photo_background.py`
+   - **B. User replaces background** to white/blue/gray
+   - **C. User retakes the photo** (best quality)
+3. If the user chooses auto-removal, run:
+
+```bash
+python scripts/remove_photo_background.py photo/portrait.jpg photo/portrait-clean.png --background white
+```
+
+4. Never overwrite the original photo. Use a new output path such as `photo/portrait-clean.png`
+5. Re-check the cleaned photo before W2 PDF rendering
+
+The background-removal helper runs locally with `rembg` + `Pillow`; no photo is uploaded to a
+remote service. Install optional dependencies with `pip install -r requirements-optional.txt`.
+Because `rembg` may lag newest Python releases, prefer Python 3.11-3.13 for the photo helper.
+The first run may download the segmentation model into the local user cache.
 
 ---
 
@@ -388,6 +408,7 @@ This skill ships with two starter templates under `assets/templates/`:
 - **5-section order**: Summary → Education → Relevant Experience → Project → Skills
 - **W1 trigger**: copy `resume-template-en.md` to `resume-library/resume_v1_<date>_<role>.md`, fill content
 - **W2 trigger**: render with your preferred `md → PDF` tool
+- **Bundled script**: `scripts/render_resume_pdf.py --language en`
 - **Self-check**: 1-page A4 + visual score ≥9.5/10
 - **Photo**: ❌ does not embed (no photo slot)
 
@@ -397,7 +418,10 @@ This skill ships with two starter templates under `assets/templates/`:
 - **Use case**: Chinese resumes
 - **3-section order**: Education → Work/Project Experience → Skills
 - **W1 trigger**: copy `resume-template-zh.md` to `resume-library/resume_v1_<date>_<role>.md`, fill content
-- **W2 trigger**: render with photo embedded at top-left (~25×30mm)
+- **W2 trigger**: render with photo embedded at top-right (~25×30mm)
+- **Bundled scripts**:
+  - Clean background if needed: `scripts/remove_photo_background.py`
+  - Render PDF: `scripts/render_resume_pdf.py --language zh --photo <path>`
 - **Self-check**: 1-page A4 + visual score ≥9.0/10
 - **Photo**: ✅ mandatory (no photo → W2 refuses to render)
 
@@ -439,7 +463,8 @@ career-advisor.skill          # (renamed zip)
     ├── SKILL.md              # this file (metadata + instructions)
     ├── assets/templates/     # resume templates
     ├── references/           # optional: deep-dive docs (empty by default)
-    └── scripts/              # optional: helper scripts (empty by default)
+    ├── scripts/              # helper scripts for PDF rendering and photo background cleanup
+    └── requirements-optional.txt
 ```
 
 Install by unzipping into your skills directory and following your agent's skill-loading

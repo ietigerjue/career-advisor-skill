@@ -1,0 +1,14 @@
+# Optional helper dependencies for scripts/.
+#
+# render_resume_pdf.py can use one of:
+# - weasyprint + markdown for the highest-fidelity HTML/CSS path
+# - reportlab + pillow for an offline Python fallback
+#
+# remove_photo_background.py uses rembg + pillow.
+# Note: rembg currently supports Python >=3.11,<3.14. If your default Python is newer,
+# create a Python 3.11-3.13 virtual environment for the photo helper.
+markdown>=3.6
+weasyprint>=62.0
+reportlab>=4.2
+pillow>=10.0
+rembg[cpu]>=2.0
